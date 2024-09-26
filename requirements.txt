@@ -1,0 +1,7 @@
+setuptools
+ipykernel
+pipreqs
+tzlocal
+pytest
+pylint
+black

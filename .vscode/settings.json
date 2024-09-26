@@ -1,0 +1,10 @@
+{
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "pylint.args": [
+        "--disable=C0301", // Line too long
+        "--disable=W0719", // Exception message not specified
+        "--disable=W0718", // Broad exception caught
+        "--disable=W1203", // Logging fstring interpolation
+    ]
+}
