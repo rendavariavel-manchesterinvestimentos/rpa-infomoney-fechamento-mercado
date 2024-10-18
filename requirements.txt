@@ -5,6 +5,5 @@ pytest
 
 # Mais uadas
 pandas==2.2.3
-outlook @ git+https://github.dev/rendavariavel-manchesterinvestimentos/outlook@v0.3.0
-logger @ git+https://github.com/rendavariavel-manchesterinvestimentos/logger@v0.1.2
 python-pptx==1.0.2
+logger @ git+https://github.com/rendavariavel-manchesterinvestimentos/logger
