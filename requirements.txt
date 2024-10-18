@@ -1,7 +1,10 @@
-setuptools
-ipykernel
-pipreqs
-tzlocal
+# Obrigatorias
+python-decouple
 pytest
-pylint
-black
+
+
+# Mais usadas
+pandas
+openpyxl
+ipykernel
+sqlalchemy
