@@ -11,8 +11,8 @@ def main() -> None:
     """Função que executa todas as funções principais dos outros módulos."""
 
     outlook = Outlook("giordano.gava@wisir.com.br")
-    EMAIL_ENVIO = 'bianca.pamplona@manchesterinvest.com.br'
-    EMAIL_CC = 'marcos.neuhaus@manchesterinvest.com.br;henrique.toledo@manchesterinvest.com.br'
+    # EMAIL_ENVIO = 'bianca.pamplona@manchesterinvest.com.br'
+    # EMAIL_CC = 'marcos.neuhaus@manchesterinvest.com.br;henrique.toledo@manchesterinvest.com.br'
     template_fechamento_mercado_dev = BASE_DIR / "source/assets/template.pptm"
     template_fechamento_mercado_prd = BASE_DIR / "source/tmp/publicacao_fechamento_mercado.pptm"
     publicacao_fechamento_mercado_png = BASE_DIR / "source/tmp/publicacao_fechamento_mercado.png"
