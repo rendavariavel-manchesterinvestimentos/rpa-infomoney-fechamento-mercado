@@ -56,3 +56,9 @@ LOG_LEVEL = logging.INFO
 LOG_VIA_EMAIL = if_not_dev(True)
 LOG_VIA_ARQUIVO = True
 LOG_VIA_DATABASE = if_not_dev(True)
+
+# Emails
+
+EMAIL_ENVIO = 'bianca.pamplona@manchesterinvest.com.br'
+EMAIL_CC = 'marcos.neuhaus@manchesterinvest.com.br;henrique.toledo@manchesterinvest.com.br'
+EMAIL_PC = 'ordens@manchesterinvest.com.br'

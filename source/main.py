@@ -5,14 +5,12 @@ from outlook import Outlook
 from etl import extrai_dados
 from powerpoint import cria_pdf
 from imagem import transforma_em_png
-from settings import BASE_DIR
+from settings import BASE_DIR, EMAIL_CC, EMAIL_ENVIO, EMAIL_PC
 
 def main() -> None:
     """Função que executa todas as funções principais dos outros módulos."""
 
-    outlook = Outlook("giordano.gava@wisir.com.br")
-    # EMAIL_ENVIO = 'bianca.pamplona@manchesterinvest.com.br'
-    # EMAIL_CC = 'marcos.neuhaus@manchesterinvest.com.br;henrique.toledo@manchesterinvest.com.br'
+    outlook = Outlook(EMAIL_PC)
     template_fechamento_mercado_dev = BASE_DIR / "source/assets/template.pptm"
     template_fechamento_mercado_prd = BASE_DIR / "source/tmp/publicacao_fechamento_mercado.pptm"
     publicacao_fechamento_mercado_png = BASE_DIR / "source/tmp/publicacao_fechamento_mercado.png"
@@ -32,7 +30,8 @@ def main() -> None:
     transforma_em_png(template_fechamento_mercado_prd, publicacao_fechamento_mercado_png)
 
     outlook.enviar_email(
-        para = "giordano.gava@wisir.com.br",
+        para = EMAIL_ENVIO,
+        copia_carbono = EMAIL_CC,
         assunto = "Envio do Fechamento do Mercado de hoje",
         corpo = (
             (BASE_DIR / "source/assets/tamplate_email.html")

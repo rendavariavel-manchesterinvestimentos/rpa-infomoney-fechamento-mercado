@@ -27,19 +27,19 @@ def cria_pdf(valores_dos_ativos: dict, acoes_em_alta_baixa: dict, modelo: Path, 
 
         match shape.name:
             case 'Variação IBOV':
-                formatacao_textos_pp(shape, valores_dos_ativos["ativos"][4]["Variação"], 327, 279, "numérico", True)
-                inserir_negativo_positivo(slide, valores_dos_ativos["ativos"][4]["Variação"], 285, 287, 23, 22)
+                formatacao_textos_pp(shape, valores_dos_ativos["ativos"][0]["Variação"], 327, 279, "numérico", True)
+                inserir_negativo_positivo(slide, valores_dos_ativos["ativos"][0]["Variação"], 285, 287, 23, 22)
 
             case 'Cotação IBOVESPA':
-                formatacao_textos_pp(shape, round(valores_dos_ativos["ativos"][4]["Valor"]), 333, 306, "ibov", False)
+                formatacao_textos_pp(shape, round(valores_dos_ativos["ativos"][0]["Valor"]), 333, 306, "ibov", False)
 
             case 'Variação NASDAQ':
-                formatacao_textos_pp(shape, valores_dos_ativos["ativos"][1]["Variação"], 327, 343, "numérico", True)
-                inserir_negativo_positivo(slide, valores_dos_ativos["ativos"][1]["Variação"], 285, 351, 23, 22)
+                formatacao_textos_pp(shape, valores_dos_ativos["ativos"][4]["Variação"], 327, 343, "numérico", True)
+                inserir_negativo_positivo(slide, valores_dos_ativos["ativos"][4]["Variação"], 285, 351, 23, 22)
 
             case 'Variação S&P 500':
-                formatacao_textos_pp(shape, valores_dos_ativos["ativos"][0]["Variação"], 327, 396, "numérico", True)
-                inserir_negativo_positivo(slide, valores_dos_ativos["ativos"][0]["Variação"], 285, 402, 23, 22)
+                formatacao_textos_pp(shape, valores_dos_ativos["ativos"][1]["Variação"], 327, 396, "numérico", True)
+                inserir_negativo_positivo(slide, valores_dos_ativos["ativos"][1]["Variação"], 285, 402, 23, 22)
 
             case 'Variação EUROSTOXX':
                 formatacao_textos_pp(shape, valores_dos_ativos["ativos"][2]["Variação"], 327, 454, "numérico", True)
@@ -145,7 +145,6 @@ def formatacao_textos_pp(
             tamanho_fonte = Pt(16)
             nome_fonte = 'Segoe UI Semilight'
             cor_fonte = RGBColor(115, 111, 111)
-            texto = "R$ " + texto + "*"
 
     paragrafo.alignment = PP_ALIGN.LEFT
     paragrafo.font.bold = bold

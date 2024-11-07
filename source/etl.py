@@ -2,7 +2,6 @@
 do mercado direto do site Yahoo Finance e formata deixando em formato de Dicionário"""
 
 import time
-import io
 import logging
 import pandas as pd
 import numpy as np
@@ -13,8 +12,6 @@ from pandera import Column, DataFrameSchema, Check
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
 
 # Configuração do logger com envio de email
@@ -38,61 +35,97 @@ def extrai_dados() -> tuple[dict, dict]:
     # Load
     return valores_dos_ativos, acoes_em_alta_baixa
 
-def obter_variacao_ativos() -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Obtem os dados de Variação dos ativos principais e dos ativos em alta e baixa
+def extrai_ativos_principais(url: str, nome_ativo: str) -> pd.DataFrame:
+    """
+    Extrai os ativos principais de uma página de ativos.
+
+    ### Argumentos:
+    - url: URL da página de ativos
+    - nome_ativo: Nome do ativo
 
     ### Returns:
-    - variacao_ativos_principais (pd.DataFrame): DataFrame com dados de Variação dos ativos principais
-    - variacao_altas_baixas (pd.DataFrame): DataFrame com dados de Variação dos ativos em alta e baixa
+    - DataFrame com os ativos principais
     """
 
     options = Options()
     options.add_argument("--log-level=3")
+    browser = webdriver.Chrome(options=options)
 
-    browser = webdriver.Chrome(options = options)
-    browser.get("https://login.yahoo.com/")
-
-    WebDriverWait(browser, 60).until(
-        EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div[2]/div[1]/div[2]/div[2]/form/div[1]/div[3]/input"))
-    ).send_keys("mesarv01teams@manchesterinvest.com.br")
-
-    browser.find_element(By.XPATH, "/html/body/div[1]/div[2]/div[1]/div[2]/div[2]/form/div[2]/input").click()
-
-    time.sleep(1)
-    WebDriverWait(browser, 60).until(
-        EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div[2]/div[1]/div[2]/div[2]/form/div[2]/input"))
-    ).send_keys("violino-MATADOR-galaxia")
-
-    time.sleep(1)
-    browser.find_element(By.XPATH, "/html/body/div[1]/div[2]/div[1]/div[2]/div[2]/form/div[3]/div[1]/button").click()
-
-
-    # Extrai os dados do meu portfólio
-    browser.get("https://br.financas.yahoo.com/portfolio/p_1/view/v1")
+    browser.get(url)
     time.sleep(1)
 
-    df_ativos_principais = pd.read_html(io.StringIO(browser.page_source))[0]
+    nome_atual = browser.find_element(By.XPATH, '//*[@id="quote-header-info"]/div[2]/div[1]/div[1]/h1').text
+    nome_atual = nome_ativo
+    valor_atual = browser.find_element(By.XPATH, '//*[@id="quote-header-info"]/div[3]/div[1]/div/fin-streamer[1]').text
+    variacao_percentual = browser.find_element(By.XPATH, '//*[@id="quote-header-info"]/div[3]/div[1]/div/fin-streamer[3]/span').text
+    variacao_percentual = variacao_percentual.replace("(", " ").replace(")", " ").strip()
 
-    # Extrai as maiores variações
-    browser.get("https://br.financas.yahoo.com/noticias/acoes-em-alta/")
-    time.sleep(1)
+    data = {
+        'Símbolo': [nome_atual],
+        'Último Preço': [valor_atual],
+        '% de var.': [variacao_percentual]
+    }
 
-    df_maiores_variacoes = pd.read_html(io.StringIO(browser.page_source), decimal = ",")[0]
-
-    #Extrai as menores variações
-    browser.get("https://br.financas.yahoo.com/noticias/acoes-em-baixa/")
-    time.sleep(1)
-
-    df_menores_variacoes = pd.read_html(io.StringIO(browser.page_source), decimal = ",")[0]
-
-    df_altas_baixas_concat = pd.concat([df_maiores_variacoes, df_menores_variacoes], ignore_index=True)
+    df_ativos_principais = pd.DataFrame(data)
 
     browser.quit()
 
-    return df_ativos_principais, df_altas_baixas_concat
+    return df_ativos_principais
+
+def obter_variacao_ativos() -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Obtem os dados de Variação dos ativos principais e dos ativos em alta e baixa
+
+    ### Returns:
+    - df_ativos_principais (pd.DataFrame): DataFrame com dados de Variação dos ativos principais
+    - df_altas_baixas_concat (pd.DataFrame): DataFrame com dados de Variação dos ativos em alta e baixa
+    """
+
+    options = Options()
+    options.add_argument("--log-level=3")
+    browser = webdriver.Chrome(options = options)
+
+    # Extrai os ativos principais
+    df_ibov = extrai_ativos_principais("https://br.financas.yahoo.com/quote/%5EBVSP/?p=%5EBVSP", "^BVSP")
+    df_sep = extrai_ativos_principais("https://br.financas.yahoo.com/quote/%5EGSPC/", "^GSPC")
+    df_euro = extrai_ativos_principais("https://br.financas.yahoo.com/quote/EURBRL%3DX/", "EURBRL=X")
+    df_dolar = extrai_ativos_principais("https://br.financas.yahoo.com/quote/USDBRL=X/", "BRL=X")
+    df_nasdaq = extrai_ativos_principais("https://br.financas.yahoo.com/quote/%5EIXIC/", "^IXIC")
+
+    # Concatena os DataFrames
+    df_ativos_principais = pd.concat([df_ibov, df_sep, df_euro, df_dolar, df_nasdaq])
+
+    # Extrai as maiores e menores variações
+    browser.get("https://www.infomoney.com.br/ferramentas/altas-e-baixas/")
+    time.sleep(10)
+    df_maiores_menores_variacoes = pd.read_html(browser.page_source, decimal=",")[0]
+
+    # Formata a coluna 'Var. Dia (%)' para incluir vírgulas como separador decimal e duas casas decimais
+    df_maiores_menores_variacoes["Var. Dia (%)"] = (
+        (df_maiores_menores_variacoes["Var. Dia (%)"].astype(float) / 100)
+        .map("{:,.2f}%".format)
+        .str.replace('.', ',')
+    )
+
+    df_maiores_menores_variacoes["Último (R$)"] = (
+        (df_maiores_menores_variacoes["Último (R$)"].astype(float) / 100)
+        .map("{:,.2f}%".format)
+        .str.replace('.', ',')
+    )
+
+    # Pega as colunas que desejamos usar
+    colunas_desejadas = ["Ativo", "Último (R$)", "Var. Dia (%)"]
+    df_maiores_menores_variacoes = df_maiores_menores_variacoes[colunas_desejadas]
+
+    # Coloca em ordem crescente
+    df_maiores_menores_variacoes = df_maiores_menores_variacoes.sort_index()
+
+    browser.quit()
+
+    return df_ativos_principais, df_maiores_menores_variacoes
 
 def formata_df_ativos_principais(df_ativos_principais: pd.DataFrame) -> dict:
-    """Formata o dataframe dos ativos principais e transforma em dicionário.
+    """
+    Formata o dataframe dos ativos principais e transforma em dicionário.
 
     ### Argumentos:
     - df_ativos_principais (pd.DataFrame): DataFrame com dados dos ativos principais
@@ -114,13 +147,18 @@ def formata_df_ativos_principais(df_ativos_principais: pd.DataFrame) -> dict:
         columns = ['Ticker', 'Valor', 'Variação'],
     )
 
-    df_ativos_principais["Variação"] = df_ativos_principais["Variação"].apply(convert_to_float)
+    df_ativos_principais["Variação"] = df_ativos_principais["Variação"].apply(convert_to_float).round(2)
 
     # Formata a coluna Valor e tranforma em float
-    df_ativos_principais["Valor"] = df_ativos_principais["Valor"].apply(convert_to_float)
-    df_ativos_principais.loc[df_ativos_principais["Ticker"] == "BRL=X", "Valor"] /= 10000
-    df_ativos_principais["Valor"] = df_ativos_principais["Valor"].round(2)
+    df_ativos_principais["Valor"] = df_ativos_principais["Valor"].apply(convert_to_float).round(2)
 
+    df_ativos_principais = df_ativos_principais.astype(
+        dtype = {
+            "Ticker": str,
+            "Valor": float,
+            "Variação": float,
+        }
+    )
 
     # Verificar antes de converter para dicionario
     schema = DataFrameSchema(
@@ -150,44 +188,36 @@ def formata_df_ativos_principais(df_ativos_principais: pd.DataFrame) -> dict:
 
     return valores_dos_ativos
 
-def formata_df_altas_baixas_concat(df_altas_baixas_concat: pd.DataFrame) -> dict:
+def formata_df_altas_baixas_concat(df_maiores_menores_variacoes: pd.DataFrame) -> dict:
     """Formata o dataframe dos ativos em alta e em baixa e transforma em dicionário.
 
     ### Argumentos:
-    - df_altas_baixas_concat (pd.DataFrame): DataFrame com dados dos ativos principais
+    - df_maiores_menores_variacoes (pd.DataFrame): DataFrame com dados dos ativos principais
 
     ### Returns:
     - acoes_em_alta_baixa (dict): Dicionário com os dados dos ativos principais
     """
 
     #Renomeia o dataframe
-    df_altas_baixas_concat.rename(
+    df_maiores_menores_variacoes.rename(
         columns={
-            'Símbolo': 'Ticker',
-            'Preço (em um dia)': 'Valor',
-            '% de variação': 'Variação',
+            'Ativo': 'Ticker',
+            'Último (R$)': 'Valor',
+            'Var. Dia (%)': 'Variação',
         },
         inplace = True
     )
 
     # Maiores e Menores Variações
-    df_altas_baixas_concat = df_altas_baixas_concat.reindex(
+    df_maiores_menores_variacoes = df_maiores_menores_variacoes.reindex(
         columns = ['Ticker', 'Valor', 'Variação'],
     )
 
-    regex_ticker = r"([A-Z]{4}[\d]{2}|[A-Z]{4}[\d]{1}).SA"
-
-    # Filtra ps tickers corretos
-    df_altas_baixas_concat = df_altas_baixas_concat[df_altas_baixas_concat["Ticker"].str.contains(regex_ticker, regex = True)]
-
-    # Obtem os grupos
-    df_altas_baixas_concat["Ticker"] = df_altas_baixas_concat["Ticker"].str.extract(regex_ticker)
-
-
     # Transforma em float
-    df_altas_baixas_concat["Variação"] = df_altas_baixas_concat["Variação"].apply(convert_to_float)
+    df_maiores_menores_variacoes["Variação"] = df_maiores_menores_variacoes["Variação"].apply(convert_to_float)
+    df_maiores_menores_variacoes["Valor"] = df_maiores_menores_variacoes["Valor"].apply(convert_to_float)
 
-    df_altas_baixas_concat = df_altas_baixas_concat.astype(
+    df_maiores_menores_variacoes = df_maiores_menores_variacoes.astype(
         dtype = {
             "Ticker": str,
             "Valor": float,
@@ -195,30 +225,9 @@ def formata_df_altas_baixas_concat(df_altas_baixas_concat: pd.DataFrame) -> dict
         }
     )
 
-    # Verificar antes de converter para dicionario
-    schema = DataFrameSchema(
-            columns = {
-                "Ticker": Column(
-                        pa.String, checks=[
-                        Check.str_length(
-                            5, 6, error="Os valores na coluna 'Ticker' devem ter entre 5 e 6 caracteres."
-                        )
-                    ]
-                ),
-                "Valor": Column(pa.Float, nullable=False),
-                "Variação": Column(pa.Float, nullable=False)
-            }
-    )
-
-    try:
-        schema.validate(df_altas_baixas_concat)
-
-    except pa.errors.SchemaError as exception:
-        raise exception
-
     # Cria dicionário df cotação concatenado
-    maiores_altas = cria_dict(df_altas_baixas_concat)
-    maiores_baixas = cria_dict(df_altas_baixas_concat, True)
+    maiores_altas = cria_dict(df_maiores_menores_variacoes)
+    maiores_baixas = cria_dict(df_maiores_menores_variacoes, True)
 
     acoes_em_alta_baixa = {
         "alta": maiores_altas,
@@ -240,7 +249,7 @@ def convert_to_float(valor: str) -> float:
     if isinstance(valor, str):
         valor_limpo = valor.replace('+', '').replace('%', '').replace(".", "").replace(',', '.')
 
-        return -float(valor_limpo.replace("-", "")) if '-' in valor else float(valor_limpo)
+        return float(valor_limpo)
 
     return np.nan
 
