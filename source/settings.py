@@ -15,11 +15,11 @@ from decouple import config
 
 # Id do repositorio no GitHub
 # ? - Veja no dicionario de dados
-APP_ID: int = None
+APP_ID: int = 863490744
 
 
 # Muda as configuracoes para se voce estiver em desenvolvimento do projeto
-DEV_MODE = True
+DEV_MODE = False
 
 def if_not_dev(dev_false: any, dev_true: any = False) -> any:
     """Muda as configuracoes se DEV_MODE for True
