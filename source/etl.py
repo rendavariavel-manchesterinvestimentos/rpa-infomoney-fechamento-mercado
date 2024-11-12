@@ -87,7 +87,7 @@ def obter_variacao_ativos() -> tuple[pd.DataFrame, pd.DataFrame]:
     # Extrai os ativos principais
     df_ibov = extrai_ativos_principais("https://br.financas.yahoo.com/quote/%5EBVSP/?p=%5EBVSP", "^BVSP")
     df_sep = extrai_ativos_principais("https://br.financas.yahoo.com/quote/%5EGSPC/", "^GSPC")
-    df_euro = extrai_ativos_principais("https://br.financas.yahoo.com/quote/EURBRL%3DX/", "EURBRL=X")
+    df_euro = extrai_ativos_principais("https://br.financas.yahoo.com/quote/LYMZ.DE/", "LYMZ.DE")
     df_dolar = extrai_ativos_principais("https://br.financas.yahoo.com/quote/USDBRL=X/", "BRL=X")
     df_nasdaq = extrai_ativos_principais("https://br.financas.yahoo.com/quote/%5EIXIC/", "^IXIC")
 
@@ -166,7 +166,7 @@ def formata_df_ativos_principais(df_ativos_principais: pd.DataFrame) -> dict:
             "Ticker": Column(
                 pa.String,
                 nullable = False,
-                checks = Check.isin(["^GSPC", "^IXIC", "EURBRL=X", "BRL=X", "^BVSP"])
+                checks = Check.isin(["^GSPC", "^IXIC", "LYMZ.DE", "BRL=X", "^BVSP"])
             ),
             "Valor": Column(pa.Float, nullable = False),
             "Variação": Column(pa.Float, nullable = False)
