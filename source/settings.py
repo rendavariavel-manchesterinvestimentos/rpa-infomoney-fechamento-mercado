@@ -61,6 +61,6 @@ LOG_VIA_DATABASE = if_not_dev(True)
 
 
 # Emails
-EMAIL_ENVIO = 'bianca.pamplona@manchesterinvest.com.br'
-EMAIL_CC = 'marcos.neuhaus@manchesterinvest.com.br;henrique.toledo@manchesterinvest.com.br'
+EMAIL_ENVIO = 'bianca.pamplona@manchesterinvest.com.br;flavia@manchesterinvest.com.br'
+EMAIL_CC = 'marcos.neuhaus@manchesterinvest.com.br;henrique.toledo@manchesterinvest.com.br;gustavo.simao@manchesterinvest.com.br'
 EMAIL_PC = 'ordens@manchesterinvest.com.br'
