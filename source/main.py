@@ -1,19 +1,28 @@
 """Módulo principal que executa as funções main de cada módulo dentro de source"""
 
 import os
+
 from outlook import Outlook
+
 from etl import extrai_dados
 from powerpoint import cria_pdf
 from imagem import transforma_em_png
-from settings import BASE_DIR, EMAIL_CC, EMAIL_ENVIO, EMAIL_PC
+
+from settings import (
+    TMP_DIR,
+    BASE_DIR,
+    EMAIL_PC,
+    EMAIL_CC,
+    EMAIL_ENVIO,
+)
 
 def main() -> None:
     """Função que executa todas as funções principais dos outros módulos."""
 
     outlook = Outlook(EMAIL_PC)
     template_fechamento_mercado_dev = BASE_DIR / "source/assets/template.pptm"
-    template_fechamento_mercado_prd = BASE_DIR / "source/tmp/publicacao_fechamento_mercado.pptm"
-    publicacao_fechamento_mercado_png = BASE_DIR / "source/tmp/publicacao_fechamento_mercado.png"
+    template_fechamento_mercado_prd = TMP_DIR / "publicacao_fechamento_mercado.pptm"
+    publicacao_fechamento_mercado_png = TMP_DIR / "publicacao_fechamento_mercado.png"
 
     # Extrai os dados sobre os ativos do site yahoo finance
     valores_dos_ativos, acoes_em_alta_baixa = extrai_dados()
