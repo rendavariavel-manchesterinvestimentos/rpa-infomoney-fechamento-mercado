@@ -1,6 +1,6 @@
 # Obrigatorias
 pandas==2.2.3
-pandera==0.20.4
+pandera==0.21.0
 selenium==4.26.1
 python-pptx==1.0.2
 python-decouple==3.8
