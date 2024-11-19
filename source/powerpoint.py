@@ -3,6 +3,7 @@
 import datetime
 from typing import Literal
 from pathlib import Path
+import locale
 
 from pptx import Presentation
 from pptx.slide import Slide
@@ -22,6 +23,8 @@ def cria_pdf(valores_dos_ativos: dict, acoes_em_alta_baixa: dict, modelo: Path, 
 
     apresentacao = Presentation(modelo)
     slide = apresentacao.slides[0]
+
+    locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
 
     for shape in slide.shapes:
 
