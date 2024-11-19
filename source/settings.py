@@ -15,11 +15,11 @@ from decouple import config
 
 # Id do repositorio no GitHub
 # ? - Veja no dicionario de dados
-APP_ID: int = None
+APP_ID: int = 863490744
 
 
 # Muda as configuracoes para se voce estiver em desenvolvimento do projeto
-DEV_MODE = True
+DEV_MODE = False
 
 def if_not_dev(dev_false: any, dev_true: any = False) -> any:
     """Muda as configuracoes se DEV_MODE for True
@@ -36,6 +36,8 @@ def if_not_dev(dev_false: any, dev_true: any = False) -> any:
 
 # Diretorio do projeto
 BASE_DIR = Path(__file__).parent.parent.resolve()
+TMP_DIR = BASE_DIR / "source/tmp"
+TMP_DIR.mkdir(exist_ok = True)
 
 
 # Arquivos na cloud
@@ -57,8 +59,8 @@ LOG_VIA_EMAIL = if_not_dev(True)
 LOG_VIA_ARQUIVO = True
 LOG_VIA_DATABASE = if_not_dev(True)
 
-# Emails
 
-EMAIL_ENVIO = 'bianca.pamplona@manchesterinvest.com.br'
-EMAIL_CC = 'marcos.neuhaus@manchesterinvest.com.br;henrique.toledo@manchesterinvest.com.br'
+# Emails
+EMAIL_ENVIO = 'bianca.pamplona@manchesterinvest.com.br;flavia@manchesterinvest.com.br'
+EMAIL_CC = 'marcos.neuhaus@manchesterinvest.com.br;henrique.toledo@manchesterinvest.com.br;gustavo.simao@manchesterinvest.com.br'
 EMAIL_PC = 'ordens@manchesterinvest.com.br'
