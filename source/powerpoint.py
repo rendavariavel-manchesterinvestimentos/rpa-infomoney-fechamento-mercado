@@ -12,6 +12,8 @@ from pptx.util import Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 
+locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+
 from settings import BASE_DIR
 
 def cria_pdf(valores_dos_ativos: dict, acoes_em_alta_baixa: dict, modelo: Path, salvar: Path) -> None:
@@ -34,7 +36,7 @@ def cria_pdf(valores_dos_ativos: dict, acoes_em_alta_baixa: dict, modelo: Path, 
                 inserir_negativo_positivo(slide, valores_dos_ativos["ativos"][0]["Variação"], 285, 287, 23, 22)
 
             case 'Cotação IBOVESPA':
-                formatacao_textos_pp(shape, round(valores_dos_ativos["ativos"][0]["Valor"]), 333, 306, "ibov", False)
+                formatacao_textos_pp(shape, valores_dos_ativos["ativos"][0]["Valor"], 333, 306, "ibov", False)
 
             case 'Variação NASDAQ':
                 formatacao_textos_pp(shape, valores_dos_ativos["ativos"][4]["Variação"], 327, 343, "numérico", True)
@@ -112,12 +114,16 @@ def formatacao_textos_pp(
     paragrafo = shape.text_frame.paragraphs[0]
 
     # ? - Formatando ticker
-    if isinstance(texto, float | int):
-        texto = (
-            str(round(texto, 2))
-            .replace(".", ",")
-            .replace("-", "")
-        )
+    if isinstance(texto, (float, int)):  # Suporta float ou int
+        match formatacao:
+            case "dolar":
+                texto = texto + 1
+                texto = round(texto / 10000, 2)
+                texto = str(texto).replace(".", ",").replace("-", "")
+            case _:
+                texto = texto + 1
+                texto = str(round(texto, 3))
+                texto = texto.replace(".", ",").replace("-", "")
 
     match formatacao:
         case "numérico":
@@ -209,6 +215,7 @@ def atualizar_data(
     text_frame.paragraphs[0].font.size = Pt(16)
     text_frame.paragraphs[0].font.name = 'Segoe UI Semilight'
     text_frame.paragraphs[0].font.color.rgb = RGBColor(115, 111, 111)
+    locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
     text_frame.paragraphs[0].text = data_atual.strftime('%d de %B de %Y')
 
     shape.left = Pt(posicao_left)

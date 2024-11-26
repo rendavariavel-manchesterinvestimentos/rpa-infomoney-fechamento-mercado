@@ -50,14 +50,16 @@ def extrai_ativos_principais(url: str, nome_ativo: str) -> pd.DataFrame:
     options = Options()
     options.add_argument("--log-level=3")
     browser = webdriver.Chrome(options=options)
-
+    time.sleep(5)
     browser.get(url)
-    time.sleep(1)
 
-    nome_atual = browser.find_element(By.XPATH, '//*[@id="quote-header-info"]/div[2]/div[1]/div[1]/h1').text
+
+    nome_atual = browser.find_element(By.XPATH, '//*[@id="nimbus-app"]/section/section/section/article/section[1]/div[1]/div/div/section/h1').text
+    time.sleep(1)
     nome_atual = nome_ativo
-    valor_atual = browser.find_element(By.XPATH, '//*[@id="quote-header-info"]/div[3]/div[1]/div/fin-streamer[1]').text
-    variacao_percentual = browser.find_element(By.XPATH, '//*[@id="quote-header-info"]/div[3]/div[1]/div/fin-streamer[3]/span').text
+    valor_atual = browser.find_element(By.XPATH, '//*[@id="nimbus-app"]/section/section/section/article/section[1]/div[2]/div[1]/section/div/section/div[1]/fin-streamer[1]/span').text
+    time.sleep(1)
+    variacao_percentual = browser.find_element(By.XPATH, '//*[@id="nimbus-app"]/section/section/section/article/section[1]/div[2]/div[1]/section/div/section/div[1]/fin-streamer[3]/span').text
     variacao_percentual = variacao_percentual.replace("(", " ").replace(")", " ").strip()
 
     data = {
@@ -85,11 +87,15 @@ def obter_variacao_ativos() -> tuple[pd.DataFrame, pd.DataFrame]:
     browser = webdriver.Chrome(options = options)
 
     # Extrai os ativos principais
-    df_ibov = extrai_ativos_principais("https://br.financas.yahoo.com/quote/%5EBVSP/?p=%5EBVSP", "^BVSP")
-    df_sep = extrai_ativos_principais("https://br.financas.yahoo.com/quote/%5EGSPC/", "^GSPC")
-    df_euro = extrai_ativos_principais("https://br.financas.yahoo.com/quote/LYMZ.DE/", "LYMZ.DE")
-    df_dolar = extrai_ativos_principais("https://br.financas.yahoo.com/quote/USDBRL=X/", "BRL=X")
-    df_nasdaq = extrai_ativos_principais("https://br.financas.yahoo.com/quote/%5EIXIC/", "^IXIC")
+    df_ibov = extrai_ativos_principais("https://finance.yahoo.com/quote/%5EBVSP/", "^BVSP")
+    time.sleep(1)
+    df_sep = extrai_ativos_principais("https://finance.yahoo.com/quote/%5EGSPC/", "^GSPC")
+    time.sleep(1)
+    df_euro = extrai_ativos_principais("https://finance.yahoo.com/quote/LYMZ.DE/", "LYMZ.DE")
+    time.sleep(1)
+    df_dolar = extrai_ativos_principais("https://finance.yahoo.com/quote/BRL=X/", "BRL=X")
+    time.sleep(1)
+    df_nasdaq = extrai_ativos_principais("https://finance.yahoo.com/quote/%5EIXIC/", "^IXIC")
 
     # Concatena os DataFrames
     df_ativos_principais = pd.concat([df_ibov, df_sep, df_euro, df_dolar, df_nasdaq])
@@ -147,10 +153,11 @@ def formata_df_ativos_principais(df_ativos_principais: pd.DataFrame) -> dict:
         columns = ['Ticker', 'Valor', 'Variação'],
     )
 
-    df_ativos_principais["Variação"] = df_ativos_principais["Variação"].apply(convert_to_float).round(2)
+    df_ativos_principais["Variação"] = df_ativos_principais["Variação"].apply(convert_to_float) / 100
 
     # Formata a coluna Valor e tranforma em float
-    df_ativos_principais["Valor"] = df_ativos_principais["Valor"].apply(convert_to_float).round(2)
+    df_ativos_principais["Valor"] = df_ativos_principais["Valor"].apply(convert_to_float).round(3)
+
 
     df_ativos_principais = df_ativos_principais.astype(
         dtype = {
@@ -159,6 +166,7 @@ def formata_df_ativos_principais(df_ativos_principais: pd.DataFrame) -> dict:
             "Variação": float,
         }
     )
+
 
     # Verificar antes de converter para dicionario
     schema = DataFrameSchema(
@@ -185,6 +193,7 @@ def formata_df_ativos_principais(df_ativos_principais: pd.DataFrame) -> dict:
     valores_dos_ativos = {
         "ativos": ativos,
     }
+
 
     return valores_dos_ativos
 
